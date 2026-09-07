@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <title>Gestión de incidencia — ARES</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./tokens.css" />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        font-family: var(--font-family-base);
+        background: var(--color-bg-secondary);
+      }
+      .app {
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+      }
+      #sidebar {
+        position: relative;
+        z-index: 30;
+      }
+      main {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+      .scroll-area {
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        padding: var(--space-4) var(--space-6);
+        background: var(--color-bg-primary);
+        border-bottom: 1px solid var(--color-border-default);
+      }
+      .topbar h1 {
+        margin: 0;
+        font-size: var(--font-size-h3);
+        line-height: var(--line-height-h3);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-primary);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+      /* Fase 2 — subtítulo "Incidencia Padre/Hija" bajo el ID. */
+      .titulo-bloque {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .titulo-rol {
+        margin: 0;
+        font-size: var(--font-size-xs);
+        color: var(--color-text-tertiary);
+      }
+      /* Fase 2 — breadcrumb al padre, solo en el detalle de una hija. */
+      .breadcrumb {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        text-decoration: none;
+      }
+      .breadcrumb-id {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-tertiary);
+      }
+      .breadcrumb:hover .breadcrumb-id {
+        color: var(--color-text-brand);
+        text-decoration: underline;
+      }
+      .breadcrumb-rol {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-tertiary);
+      }
+      .breadcrumb-flecha {
+        color: var(--color-text-tertiary);
+      }
+
+      .topbar-meta {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+      }
+      .topbar-olt {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-secondary);
+      }
+      .topbar-ubicacion {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-tertiary);
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: var(--space-4);
+        padding: var(--space-6);
+        align-items: start;
+      }
+      .col-main {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+      .col-side {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+
+      .stat-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--space-4);
+      }
+      .stat-card {
+        background: var(--color-bg-primary);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4);
+      }
+      .stat-card .label {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-tertiary);
+        margin: 0 0 var(--space-1);
+      }
+      .stat-card .value {
+        font-size: var(--font-size-h4);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-primary);
+        margin: 0;
+      }
+      .stat-card .value.accent {
+        color: var(--color-text-error);
+      }
+      .stat-card .hint {
+        font-size: var(--font-size-caption);
+        color: var(--color-text-tertiary);
+        margin: var(--space-1) 0 0;
+      }
+      .vno-chip {
+        display: inline-flex;
+        gap: 2px;
+        padding: var(--space-1) var(--space-2);
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+        white-space: nowrap;
+      }
+      .vno-chip b {
+        font-weight: var(--font-weight-bold);
+      }
+
+      .panel {
+        background: var(--color-bg-primary);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4);
+      }
+      .panel-muted {
+        background: var(--color-bg-tertiary);
+      }
+      .panel-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-3);
+        margin-bottom: var(--space-3);
+      }
+
+      /* Fase 2 — pills de estado de captura en la cabecera de los paneles. */
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--radius-pill);
+        border: 1px solid;
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        white-space: nowrap;
+      }
+      .pill-ok {
+        background: var(--color-bg-success);
+        border-color: var(--color-border-success);
+        color: var(--color-text-success);
+      }
+      .pill-cargando {
+        background: var(--color-bg-brand-subtle);
+        border-color: var(--color-border-brand);
+        color: var(--color-text-brand);
+      }
+
+      /* Fase 2 — banner de resultado, cruza las 2 columnas del grid. */
+      .notif-banner {
+        grid-column: 1 / -1;
+        margin-bottom: var(--space-2);
+      }
+
+      /* Fase 2 — lista de incidencias correlacionadas. */
+      .correlacionadas-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+      .panel-pag {
+        margin-top: var(--space-3);
+      }
+      .panel-title-row h3 {
+        margin: 0;
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-primary);
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+      }
+      .badge-count {
+        display: inline-flex;
+        align-items: center;
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--radius-pill);
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border-default);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-tertiary);
+      }
+
+      .evidencia-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        margin-bottom: var(--space-3);
+      }
+      .evidencia-grid > div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-1);
+        padding: var(--space-3) var(--space-2);
+        text-align: center;
+        border-right: 1px solid var(--color-border-default);
+      }
+      .evidencia-grid > div:last-child {
+        border-right: none;
+      }
+      .evidencia-grid .num {
+        margin: 0;
+        font-size: var(--font-size-h4);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-primary);
+      }
+      .evidencia-grid .num.ok {
+        color: var(--color-text-success);
+      }
+      .evidencia-grid .num.warn {
+        color: var(--color-text-error);
+      }
+      .evidencia-grid .cap {
+        margin: 0;
+        font-size: var(--font-size-caption);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-tertiary);
+      }
+      .gestor-row {
+        display: flex;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+      }
+
+      .alarm-search {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-3);
+        border: 1px solid var(--color-border-default);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-3);
+      }
+      .alarm-search svg {
+        color: var(--color-icon-secondary);
+        flex-shrink: 0;
+      }
+      .alarm-search input {
+        border: none;
+        outline: none;
+        font-family: var(--font-family-base);
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+        width: 100%;
+      }
+
+      .alarm-filters {
+        display: flex;
+        gap: var(--space-2);
+        margin-bottom: var(--space-3);
+      }
+      .alarm-filters button {
+        all: unset;
+        cursor: pointer;
+        padding: var(--space-1) var(--space-3);
+        border-radius: var(--radius-pill);
+        border: 1px solid var(--color-border-default);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-tertiary);
+      }
+      .alarm-filters button[aria-pressed="true"] {
+        background: var(--color-bg-brand-subtle);
+        border-color: var(--color-border-brand);
+        color: var(--color-text-brand);
+      }
+
+      .alarm-head-row {
+        display: flex;
+        gap: var(--space-3);
+        padding: var(--space-2) var(--space-3);
+        background: var(--color-bg-tertiary);
+        font-size: var(--font-size-xs);
+        color: var(--color-text-tertiary);
+        border: 1px solid var(--color-border-default);
+        border-bottom: none;
+        border-radius: var(--radius-md) var(--radius-md) 0 0;
+      }
+      .alarm-head-row span {
+        flex: 1 0 0;
+      }
+      /* Sin overflow:hidden: recortaría los tooltips de las filas. */
+      .alarm-list {
+        border: 1px solid var(--color-border-default);
+        border-top: none;
+        border-radius: 0 0 var(--radius-md) var(--radius-md);
+      }
+      .empty-state {
+        padding: var(--space-6);
+        text-align: center;
+        color: var(--color-text-tertiary);
+        font-size: var(--font-size-sm);
+      }
+
+      .pagination {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: var(--space-3);
+        font-size: var(--font-size-xs);
+        color: var(--color-text-tertiary);
+      }
+      .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: var(--space-1);
+      }
+      .page-btn {
+        all: unset;
+        cursor: pointer;
+        min-width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-secondary);
+      }
+      .page-btn[aria-current="true"] {
+        background: var(--color-bg-brand);
+        color: var(--color-text-inverse);
+      }
+      .page-btn:disabled {
+        color: var(--color-text-disabled);
+        cursor: not-allowed;
+      }
+      .page-dots {
+        padding: 0 var(--space-1);
+      }
+
+      .vno-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+      .vno-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--space-2) 0;
+        border-bottom: 1px solid var(--color-border-default);
+      }
+      .vno-item:last-child {
+        border-bottom: none;
+      }
+      .vno-item .name {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-secondary);
+      }
+      .vno-item .carrier {
+        font-size: var(--font-size-caption);
+        color: var(--color-text-tertiary);
+      }
+      .vno-item .uic {
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-brand);
+        background: var(--color-bg-brand-subtle);
+        border: 1px solid var(--color-border-brand);
+        border-radius: var(--radius-sm);
+        padding: var(--space-1) var(--space-2);
+      }
+
+      .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+        font-size: var(--font-size-xs);
+      }
+      .info-list .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .info-list .row span:first-child {
+        color: var(--color-text-tertiary);
+      }
+      .info-list .row span:last-child {
+        color: var(--color-text-secondary);
+        font-weight: var(--font-weight-bold);
+      }
+
+      /* No forzar `display` acá: rompería el ocultamiento condicional de ares-validation-bar. */
+      ares-validation-bar {
+        padding: var(--space-4) var(--space-6);
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <ares-sidebar id="sidebar" expandido></ares-sidebar>
+
+      <main>
+        <div class="scroll-area">
+          <div class="topbar">
+            <ares-icon-button id="btnVolver" variant="neutral" label="Volver"
+              ><svg
+                width="15"
+                height="10"
+                viewBox="0 0 15 10"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M15 4.16667H3.19167L6.175 1.175L5 0L0 5L5 10L6.175 8.825L3.19167 5.83333H15V4.16667Z"
+                  fill="currentColor"
+                /></svg
+            ></ares-icon-button>
+            <!-- Fase 2: breadcrumb padre → hija. Solo visible cuando se
+                 está viendo el detalle de una incidencia hija. -->
+            <a class="breadcrumb" id="breadcrumbPadre" href="#" hidden>
+              <span class="breadcrumb-id" id="breadcrumbId"></span>
+              <span class="breadcrumb-rol">Incidencia Padre</span>
+            </a>
+            <span class="breadcrumb-flecha" id="breadcrumbFlecha" aria-hidden="true" hidden>→</span>
+            <div class="titulo-bloque">
+              <h1>
+                <span id="tituloId"></span
+                ><ares-status-badge id="tituloEstado"></ares-status-badge>
+              </h1>
+              <p class="titulo-rol" id="tituloRol"></p>
+            </div>
+            <div class="topbar-meta">
+              <span class="topbar-olt" id="topbarOlt"></span>
+              <span class="topbar-ubicacion" id="topbarUbicacion"></span>
+              <ares-problema-tag id="topbarTipo"></ares-problema-tag>
+            </div>
+          </div>
+
+          <div class="layout">
+            <!-- Fase 2: resultado de la gestión. Aparece justamente cuando la
+                 barra de acción desaparece (ver DIFF-FASE2.md, N3/N5). -->
+            <ares-notification-banner id="notifBanner" class="notif-banner" hidden></ares-notification-banner>
+
+            <div class="col-main">
+              <div class="stat-row">
+                <div class="stat-card">
+                  <p class="label">Afectación total</p>
+                  <p class="value" id="statAfectacionTotal"></p>
+                  <p class="hint">Alcance potencial del evento</p>
+                </div>
+                <div class="stat-card">
+                  <p class="label">Afectación real</p>
+                  <p class="value accent" id="statAfectacionReal"></p>
+                  <p class="hint" id="statAfectacionPct"></p>
+                </div>
+                <div class="stat-card">
+                  <p class="label">Casos VNOs</p>
+                  <div
+                    id="statVnos"
+                    style="display: flex; gap: var(--space-2); flex-wrap: wrap"
+                  ></div>
+                </div>
+                <div class="stat-card">
+                  <p class="label">Alarmas</p>
+                  <p class="value" id="statAlarmas"></p>
+                  <p class="hint" id="statAlarmasPct"></p>
+                </div>
+              </div>
+
+              <!-- Fase 2 — sección nueva. Solo se muestra si la incidencia
+                   es una consolidación (una individual o una hija no agrupan
+                   nada). Ver DIFF-FASE2.md, N6. -->
+              <div class="panel" id="panelCorrelacionadas" hidden>
+                <div class="panel-title-row">
+                  <h3>
+                    Incidencias Correlacionadas
+                    <span class="badge-count" id="correlacionadasBadge"></span>
+                  </h3>
+                  <div class="alarm-search" style="margin: 0; max-width: 240px">
+                    <svg width="14" height="14" viewBox="0 0 17.49 17.49" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12.5 11H11.71L11.43 10.73C12.444 9.55407 13.0012 8.05271 13 6.5C13 5.21442 12.6188 3.95772 11.9046 2.8888C11.1903 1.81988 10.1752 0.986756 8.98744 0.494786C7.79973 0.00281635 6.49279 -0.125905 5.23192 0.124899C3.97104 0.375703 2.81285 0.994767 1.90381 1.90381C0.994767 2.81285 0.375703 3.97104 0.124899 5.23192C-0.125905 6.49279 0.00281635 7.79973 0.494786 8.98744C0.986756 10.1752 1.81988 11.1903 2.8888 11.9046C3.95772 12.6188 5.21442 13 6.5 13C8.11 13 9.59 12.41 10.73 11.43L11 11.71V12.5L16 17.49L17.49 16L12.5 11ZM6.5 11C4.01 11 2 8.99 2 6.5C2 4.01 4.01 2 6.5 2C8.99 2 11 4.01 11 6.5C11 8.99 8.99 11 6.5 11Z" fill="currentColor"/>
+                    </svg>
+                    <input type="search" id="correlacionadasSearch" placeholder="Buscar nº de INC..." />
+                  </div>
+                </div>
+                <div class="correlacionadas-list" id="correlacionadasList"></div>
+                <ares-pagination id="correlacionadasPag" class="panel-pag"></ares-pagination>
+              </div>
+
+              <div class="panel">
+                <div class="panel-title-row">
+                  <h3>
+                    Alarmas
+                    <span class="badge-count" id="alarmasTotalBadge"></span>
+                  </h3>
+                  <span class="pill pill-cargando" id="pillAlarmas">Capturando...</span>
+                </div>
+                <div class="alarm-search">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 17.49 17.49"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12.5 11H11.71L11.43 10.73C12.444 9.55407 13.0012 8.05271 13 6.5C13 5.21442 12.6188 3.95772 11.9046 2.8888C11.1903 1.81988 10.1752 0.986756 8.98744 0.494786C7.79973 0.00281635 6.49279 -0.125905 5.23192 0.124899C3.97104 0.375703 2.81285 0.994767 1.90381 1.90381C0.994767 2.81285 0.375703 3.97104 0.124899 5.23192C-0.125905 6.49279 0.00281635 7.79973 0.494786 8.98744C0.986756 10.1752 1.81988 11.1903 2.8888 11.9046C3.95772 12.6188 5.21442 13 6.5 13C8.11 13 9.59 12.41 10.73 11.43L11 11.71V12.5L16 17.49L17.49 16L12.5 11ZM6.5 11C4.01 11 2 8.99 2 6.5C2 4.01 4.01 2 6.5 2C8.99 2 11 4.01 11 6.5C11 8.99 8.99 11 6.5 11Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  <input
+                    type="search"
+                    id="alarmSearch"
+                    placeholder="Buscar N.º de alarma..."
+                  />
+                </div>
+                <div class="alarm-filters" id="alarmFilters">
+                  <button type="button" data-filtro="todas" aria-pressed="true">
+                    Todas
+                  </button>
+                  <button type="button" data-filtro="abierto">Abiertas</button>
+                  <!-- Fase 2: "Cerradas" pasó a llamarse "Completas". El badge
+                       de la fila sigue diciendo "cerrado" — inconsistencia del
+                       propio Figma, ver DIFF-FASE2.md P3. Se mantiene el mismo
+                       valor de filtro para no cambiar la semántica del dato. -->
+                  <button type="button" data-filtro="cerrado">Completas</button>
+                  <button type="button" data-filtro="sin-evidencia">
+                    Sin evidencia
+                  </button>
+                  <button type="button" data-filtro="descartadas">
+                    Descartadas
+                  </button>
+                </div>
+                <div class="alarm-head-row">
+                  <span style="flex: 1.8 0 0">Número de alarma</span
+                  ><span style="text-align: center">Creado</span
+                  ><span style="text-align: center">Estado</span
+                  ><span style="text-align: center">CI afectado</span
+                  ><span style="flex: 0 0 60px; text-align: right"
+                    >Evidencia</span
+                  >
+                </div>
+                <div class="alarm-list" id="alarmList"></div>
+                <ares-pagination id="alarmPag" class="panel-pag"></ares-pagination>
+              </div>
+
+              <!-- Fase 2: Evidencia bajó al final de la columna (antes iba
+                   arriba de Alarmas). Ver DIFF-FASE2.md, M5. -->
+              <div class="panel">
+                <div class="panel-title-row">
+                  <h3>
+                    Evidencia
+                    <span class="badge-count" id="evidenciaTotalBadge"></span>
+                  </h3>
+                  <span class="pill pill-cargando" id="pillEvidencia">Capturando...</span>
+                </div>
+                <div class="evidencia-grid">
+                  <div>
+                    <p class="num ok" id="evCapturadas"></p>
+                    <p class="cap">Capturadas</p>
+                  </div>
+                  <div>
+                    <p class="num warn" id="evSinCapturar"></p>
+                    <p class="cap">Sin evidencia</p>
+                  </div>
+                  <div>
+                    <p class="num" id="evCobertura"></p>
+                    <p class="cap">cobertura</p>
+                  </div>
+                  <div>
+                    <p class="num" id="evGestoresCount"></p>
+                    <p class="cap">gestores</p>
+                  </div>
+                </div>
+                <div class="gestor-row" id="gestorRow"></div>
+              </div>
+            </div>
+
+            <div class="col-side">
+              <div class="panel">
+                <div class="panel-title-row">
+                  <h3>
+                    VNOs Afectados
+                    <span class="badge-count" id="vnosCountBadge"></span>
+                  </h3>
+                  <span class="pill pill-ok">✓ Capturado</span>
+                </div>
+                <div class="vno-list" id="vnoList"></div>
+                <div
+                  class="info-list"
+                  style="
+                    margin-top: var(--space-3);
+                    border-top: 1px solid var(--color-border-default);
+                    padding-top: var(--space-2);
+                  "
+                >
+                  <div class="row">
+                    <span>Suma UIC de VNOs</span><span id="vnoSumaUic"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="panel">
+                <div class="panel-title-row">
+                  <h3>Ruta física · Raíz común</h3>
+                  <span class="pill pill-ok">✓ Capturado</span>
+                </div>
+                <div class="info-list" id="rutaFisicaList"></div>
+              </div>
+
+              <div class="panel panel-muted">
+                <div class="panel-title-row"><h3>Origen del Incidente</h3></div>
+                <div class="info-list" id="origenList"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <ares-validation-bar id="validationBar"></ares-validation-bar>
+      </main>
+
+      <ares-evidence-modal id="evidenceModal"></ares-evidence-modal>
+      <ares-validation-modal id="validationModal"></ares-validation-modal>
+    </div>
+
+    <script src="./components/ares-button.js"></script>
+    <script src="./components/ares-icon-button.js"></script>
+    <script src="./components/ares-status-badge.js"></script>
+    <script src="./components/ares-problema-tag.js"></script>
+    <script src="./components/ares-alarma-badge.js"></script>
+    <script src="./components/ares-tooltip-flag.js"></script>
+    <script src="./components/ares-gestor-badge.js"></script>
+    <script src="./components/ares-alarm-row.js"></script>
+    <script src="./components/ares-confiabilidad-tag.js"></script>
+    <script src="./components/ares-pagination.js"></script>
+    <script src="./components/ares-correlated-row.js"></script>
+    <!-- ares-incident-row lo usa ares-validation-modal en modo compacto. -->
+    <script src="./components/ares-count-badge.js"></script>
+    <script src="./components/ares-expand-button.js"></script>
+    <script src="./components/ares-incident-row.js"></script>
+    <script src="./components/ares-notification-banner.js"></script>
+    <script src="./components/ares-validation-bar.js"></script>
+    <script src="./components/ares-sidebar.js"></script>
+    <script src="./components/ares-evidence-modal.js"></script>
+    <script src="./components/ares-validation-modal.js"></script>
+
+    <script src="./estado-store.js"></script>
+    <script src="./mock-data-gestion.js"></script>
+    <script src="./gestion-incidencia.js"></script>
+  </body>
+</html>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<title>Bandeja de incidencias — ARES</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="./tokens.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: var(--font-family-base); background: var(--color-bg-secondary); }
+  .app { display: flex; height: 100vh; overflow: hidden; }
+  #sidebar { position: relative; z-index: 30; }
+  main { flex: 1; overflow-y: auto; }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-6);
+    background: var(--color-bg-primary);
+    border-bottom: 1px solid var(--color-border-default);
+  }
+  .topbar h1 {
+    margin: 0;
+    font-size: var(--font-size-h3);
+    line-height: var(--line-height-h3);
+    letter-spacing: var(--letter-spacing-h3);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+  }
+  .topbar-user {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: var(--radius-full);
+    background: var(--color-bg-brand);
+    color: var(--color-text-inverse);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    flex-shrink: 0;
+  }
+  .topbar-user-info { display: flex; flex-direction: column; }
+  .topbar-user-info b { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+  .topbar-user-info span { font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
+
+  .kpi-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    flex-wrap: wrap;
+    padding: var(--space-4) var(--space-6);
+    background: var(--color-bg-primary);
+    border-bottom: 1px solid var(--color-border-default);
+  }
+
+  .content { padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); }
+
+  .banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    padding: var(--space-4);
+    background: var(--color-bg-brand-subtle);
+    border: 1px solid var(--color-border-brand);
+    border-radius: var(--radius-lg);
+  }
+  .banner-left { display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap; }
+  .banner-pill {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border-warning);
+    border-radius: var(--radius-pill);
+    color: var(--color-text-warning);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+  }
+  .banner-pill .dot { width: 8px; height: 8px; border-radius: var(--radius-full); background: var(--color-warning-500); }
+  .banner-id { font-size: var(--font-size-base); font-weight: var(--font-weight-bold); color: var(--color-text-secondary); }
+  .banner-meta { font-size: var(--font-size-xs); color: var(--color-text-tertiary); }
+  .banner-meta b { color: var(--color-text-secondary); }
+  .banner-actions { display: flex; gap: var(--space-2); }
+
+  .tabs-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--color-border-default);
+    background: var(--color-bg-primary);
+    padding: 0 var(--space-6);
+  }
+  .tabs { display: flex; gap: var(--space-2); }
+
+  .search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-primary);
+    min-width: 240px;
+    margin: var(--space-3) 0;
+  }
+  .search svg { color: var(--color-icon-secondary); flex-shrink: 0; }
+  .search input {
+    border: none;
+    outline: none;
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    width: 100%;
+    background: transparent;
+  }
+
+  .panel-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); }
+  .panel-title { margin: 0; font-size: var(--font-size-h4); line-height: var(--line-height-h4); font-weight: var(--font-weight-bold); color: var(--color-text-primary); }
+  .panel-subtitle { margin: var(--space-1) 0 0; font-size: var(--font-size-sm); color: var(--color-text-tertiary); }
+
+  .subfilters { display: flex; gap: var(--space-2); }
+  .subfilter-btn {
+    all: unset;
+    cursor: pointer;
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--color-border-default);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-tertiary);
+  }
+  .subfilter-btn[aria-pressed="true"] {
+    background: var(--color-bg-brand-subtle);
+    border-color: var(--color-border-brand);
+    color: var(--color-text-brand);
+  }
+
+  .row-list { display: flex; flex-direction: column; gap: var(--space-2); }
+
+  /* Fase 2: las 3 bandejas paginan (antes eran scroll continuo). */
+  .lista-pag { margin-top: var(--space-4); }
+
+  .empty-state { padding: var(--space-6); text-align: center; color: var(--color-text-tertiary); font-size: var(--font-size-sm); }
+
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <ares-sidebar id="sidebar" expandido></ares-sidebar>
+
+  <main>
+    <div class="topbar">
+      <h1>Bandeja de incidencias</h1>
+      <div class="topbar-user">
+        <span class="avatar" id="topbarAvatar"></span>
+        <div class="topbar-user-info">
+          <b id="topbarNombre"></b>
+          <span id="topbarRol"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="kpi-row" id="kpiRow"></div>
+
+    <div class="tabs-row">
+      <div class="tabs" id="tabs">
+        <ares-tab-button id="tabPendientes" data-estado="pendiente" active>
+          <svg slot="icon" width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 14H10V16H8V14ZM8 6H10V12H8V6ZM16 2H11.82C11.4 0.84 10.3 0 9 0C7.7 0 6.6 0.84 6.18 2H2C1.86 2 1.73 2.01 1.6 2.04C1.28158 2.10698 0.984181 2.25027 0.733356 2.45755C0.48253 2.66483 0.285777 2.9299 0.16 3.23C0.0600001 3.46 0 3.72 0 4V18C0 18.27 0.0600001 18.54 0.16 18.78C0.26 19.02 0.41 19.23 0.59 19.42C0.86 19.69 1.21 19.89 1.6 19.97C1.73 19.99 1.86 20 2 20H16C17.1 20 18 19.1 18 18V4C18 2.9 17.1 2 16 2ZM9 1.75C9.41 1.75 9.75 2.09 9.75 2.5C9.75 2.91 9.41 3.25 9 3.25C8.59 3.25 8.25 2.91 8.25 2.5C8.25 2.09 8.59 1.75 9 1.75ZM16 18H2V4H16V18Z" fill="currentColor"/></svg>
+          Pendientes
+        </ares-tab-button>
+        <ares-tab-button id="tabEnCurso" data-estado="en-curso">
+          <svg slot="icon" width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16 2H11.82C11.4 0.84 10.3 0 9 0C7.7 0 6.6 0.84 6.18 2H2C0.9 2 0 2.9 0 4V18C0 19.1 0.9 20 2 20H16C17.1 20 18 19.1 18 18V4C18 2.9 17.1 2 16 2ZM9 1.75C9.22 1.75 9.41 1.85 9.55 2C9.67 2.13 9.75 2.31 9.75 2.5C9.75 2.91 9.41 3.25 9 3.25C8.59 3.25 8.25 2.91 8.25 2.5C8.25 2.31 8.33 2.13 8.45 2C8.59 1.85 8.78 1.75 9 1.75ZM16 18H2V4H16V18ZM9 5C7.35 5 6 6.35 6 8C6 9.65 7.35 11 9 11C10.65 11 12 9.65 12 8C12 6.35 10.65 5 9 5ZM9 9C8.45 9 8 8.55 8 8C8 7.45 8.45 7 9 7C9.55 7 10 7.45 10 8C10 8.55 9.55 9 9 9ZM3 15.47V17H15V15.47C15 12.97 11.03 11.89 9 11.89C6.97 11.89 3 12.96 3 15.47ZM5.31 15C6 14.44 7.69 13.88 9 13.88C10.31 13.88 12.01 14.44 12.69 15H5.31Z" fill="currentColor"/></svg>
+          En Curso · Equipo
+        </ares-tab-button>
+        <ares-tab-button id="tabHistorico" data-estado="historico">
+          <svg slot="icon" width="18" height="20" viewBox="0 0 18 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 8L13.59 6.58L7 13.17L4.41 10.59L3 12L7 16L15 8ZM16 2H11.82C11.4 0.84 10.3 0 9 0C7.7 0 6.6 0.84 6.18 2H2C1.86 2 1.73 2.01 1.6 2.04C1.28158 2.10698 0.984181 2.25027 0.733356 2.45755C0.48253 2.66483 0.285777 2.9299 0.16 3.23C0.0600001 3.46 0 3.72 0 4V18C0 18.27 0.0600001 18.54 0.16 18.78C0.26 19.02 0.41 19.23 0.59 19.42C0.86 19.69 1.21 19.89 1.6 19.97C1.73 19.99 1.86 20 2 20H16C17.1 20 18 19.1 18 18V4C18 2.9 17.1 2 16 2ZM9 1.75C9.41 1.75 9.75 2.09 9.75 2.5C9.75 2.91 9.41 3.25 9 3.25C8.59 3.25 8.25 2.91 8.25 2.5C8.25 2.09 8.59 1.75 9 1.75ZM16 18H2V4H16V18Z" fill="currentColor"/></svg>
+          Histórico
+        </ares-tab-button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Depende de currentUser.incidenciaActivaId, no del tab activo. -->
+      <div class="banner" id="banner" hidden>
+        <div class="banner-left">
+          <span class="banner-pill"><span class="dot"></span>Tu Incidencia en Curso</span>
+          <span class="banner-id" id="bannerId"></span>
+          <ares-problema-tag id="bannerTipo"></ares-problema-tag>
+          <span class="banner-meta"><b id="bannerVnos"></b> VNOs Afectadas</span>
+        </div>
+        <div class="banner-actions">
+          <ares-button id="bannerLiberar">Liberar</ares-button>
+          <ares-button id="bannerGestionar" intent="primary">Gestionar<svg slot="icon-end" width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 0L4.11875 0.88125L7.60625 4.375H0V5.625H7.60625L4.11875 9.11875L5 10L10 5L5 0Z" fill="currentColor"/></svg></ares-button>
+        </div>
+      </div>
+
+      <!-- Panel Pendientes -->
+      <section id="panelPendientes" class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Incidencias Pendientes</h2>
+            <p class="panel-subtitle" id="subPendientes"></p>
+          </div>
+          <div class="search">
+            <svg width="14" height="14" viewBox="0 0 17.49 17.49" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.5 11H11.71L11.43 10.73C12.444 9.55407 13.0012 8.05271 13 6.5C13 5.21442 12.6188 3.95772 11.9046 2.8888C11.1903 1.81988 10.1752 0.986756 8.98744 0.494786C7.79973 0.00281635 6.49279 -0.125905 5.23192 0.124899C3.97104 0.375703 2.81285 0.994767 1.90381 1.90381C0.994767 2.81285 0.375703 3.97104 0.124899 5.23192C-0.125905 6.49279 0.00281635 7.79973 0.494786 8.98744C0.986756 10.1752 1.81988 11.1903 2.8888 11.9046C3.95772 12.6188 5.21442 13 6.5 13C8.11 13 9.59 12.41 10.73 11.43L11 11.71V12.5L16 17.49L17.49 16L12.5 11ZM6.5 11C4.01 11 2 8.99 2 6.5C2 4.01 4.01 2 6.5 2C8.99 2 11 4.01 11 6.5C11 8.99 8.99 11 6.5 11Z" fill="currentColor"/></svg>
+            <input type="search" placeholder="Buscar INC, OLT o VNO..." data-search="pendiente" />
+          </div>
+        </div>
+        <div class="row-list" id="listPendientes"></div>
+        <ares-pagination id="pagPendientes" class="lista-pag"></ares-pagination>
+      </section>
+
+      <!-- Panel En Curso -->
+      <section id="panelEnCurso" class="panel" hidden>
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Incidencias En Curso</h2>
+            <p class="panel-subtitle" id="subEnCurso"></p>
+          </div>
+          <div style="display:flex; align-items:center; gap: var(--space-4); flex-wrap: wrap;">
+            <div class="subfilters" id="subfiltersEnCurso">
+              <button type="button" class="subfilter-btn" data-filtro="todas" aria-pressed="true">Todas</button>
+              <button type="button" class="subfilter-btn" data-filtro="mias" aria-pressed="false">Mis incidencias</button>
+            </div>
+            <div class="search">
+              <svg width="14" height="14" viewBox="0 0 17.49 17.49" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.5 11H11.71L11.43 10.73C12.444 9.55407 13.0012 8.05271 13 6.5C13 5.21442 12.6188 3.95772 11.9046 2.8888C11.1903 1.81988 10.1752 0.986756 8.98744 0.494786C7.79973 0.00281635 6.49279 -0.125905 5.23192 0.124899C3.97104 0.375703 2.81285 0.994767 1.90381 1.90381C0.994767 2.81285 0.375703 3.97104 0.124899 5.23192C-0.125905 6.49279 0.00281635 7.79973 0.494786 8.98744C0.986756 10.1752 1.81988 11.1903 2.8888 11.9046C3.95772 12.6188 5.21442 13 6.5 13C8.11 13 9.59 12.41 10.73 11.43L11 11.71V12.5L16 17.49L17.49 16L12.5 11ZM6.5 11C4.01 11 2 8.99 2 6.5C2 4.01 4.01 2 6.5 2C8.99 2 11 4.01 11 6.5C11 8.99 8.99 11 6.5 11Z" fill="currentColor"/></svg>
+              <input type="search" placeholder="Buscar INC, OLT o VNO..." data-search="en-curso" />
+            </div>
+          </div>
+        </div>
+        <div class="row-list" id="listEnCurso"></div>
+        <ares-pagination id="pagEnCurso" class="lista-pag"></ares-pagination>
+      </section>
+
+      <!-- Panel Histórico -->
+      <section id="panelHistorico" class="panel" hidden>
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Histórico de Incidencias</h2>
+            <p class="panel-subtitle" id="subHistorico"></p>
+          </div>
+          <div style="display:flex; align-items:center; gap: var(--space-4); flex-wrap: wrap;">
+            <div class="subfilters" id="subfiltersHistorico">
+              <button type="button" class="subfilter-btn" data-filtro="todas" aria-pressed="true">Todas</button>
+              <!-- Fase 2: agrupan por resultado, no por estado exacto —
+                   "Aprobadas" cubre Evidencia Aprobada + Correlación Aprobada. -->
+              <button type="button" class="subfilter-btn" data-filtro="aprobadas" aria-pressed="false">Aprobadas</button>
+              <button type="button" class="subfilter-btn" data-filtro="rechazadas" aria-pressed="false">Rechazadas</button>
+            </div>
+            <div class="search">
+              <svg width="14" height="14" viewBox="0 0 17.49 17.49" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12.5 11H11.71L11.43 10.73C12.444 9.55407 13.0012 8.05271 13 6.5C13 5.21442 12.6188 3.95772 11.9046 2.8888C11.1903 1.81988 10.1752 0.986756 8.98744 0.494786C7.79973 0.00281635 6.49279 -0.125905 5.23192 0.124899C3.97104 0.375703 2.81285 0.994767 1.90381 1.90381C0.994767 2.81285 0.375703 3.97104 0.124899 5.23192C-0.125905 6.49279 0.00281635 7.79973 0.494786 8.98744C0.986756 10.1752 1.81988 11.1903 2.8888 11.9046C3.95772 12.6188 5.21442 13 6.5 13C8.11 13 9.59 12.41 10.73 11.43L11 11.71V12.5L16 17.49L17.49 16L12.5 11ZM6.5 11C4.01 11 2 8.99 2 6.5C2 4.01 4.01 2 6.5 2C8.99 2 11 4.01 11 6.5C11 8.99 8.99 11 6.5 11Z" fill="currentColor"/></svg>
+              <input type="search" placeholder="Buscar INC, OLT o VNO..." data-search="historico" />
+            </div>
+          </div>
+        </div>
+        <div class="row-list" id="listHistorico"></div>
+        <ares-pagination id="pagHistorico" class="lista-pag"></ares-pagination>
+      </section>
+    </div>
+  </main>
+</div>
+
+<ares-assignment-modal id="assignModal"></ares-assignment-modal>
+<ares-release-modal id="releaseModal"></ares-release-modal>
+
+<script src="./components/ares-button.js"></script>
+<script src="./components/ares-icon-button.js"></script>
+<script src="./components/ares-tab-button.js"></script>
+<script src="./components/ares-status-badge.js"></script>
+<script src="./components/ares-problema-tag.js"></script>
+<!-- ares-incident-row va ANTES que los modales: en Fase 2 los modales lo
+     usan en modo compacto para mostrar la incidencia. -->
+<script src="./components/ares-count-badge.js"></script>
+<script src="./components/ares-confiabilidad-tag.js"></script>
+<script src="./components/ares-expand-button.js"></script>
+<script src="./components/ares-pagination.js"></script>
+<script src="./components/ares-correlated-row.js"></script>
+<script src="./components/ares-incident-row.js"></script>
+<script src="./components/ares-assignment-modal.js"></script>
+<script src="./components/ares-release-modal.js"></script>
+<script src="./components/ares-kpi-bar-detallada.js"></script>
+<script src="./components/ares-kpi-bar-resumen.js"></script>
+<script src="./components/ares-sidebar.js"></script>
+
+<script src="./estado-store.js"></script>
+<script src="./mock-data-bandeja.js"></script>
+<script src="./bandeja.js"></script>
+</body>
+</html>

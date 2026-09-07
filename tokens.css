@@ -1,0 +1,182 @@
+:root {
+  /* ============================================================
+     COLOR 
+     ============================================================ */
+  /* neutral */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f8fbfc;
+  --color-neutral-100: #f1f7f9;
+  --color-neutral-200: #e3ebef;
+  --color-neutral-300: #ccdae0;
+  --color-neutral-400: #96acb6;
+  --color-neutral-500: #6b8490;
+  --color-neutral-700: #354953;
+  --color-neutral-800: #1f303a;
+  --color-neutral-900: #101e29;
+
+  /* corporate (marca) */
+  --color-corporate-50: #ebffff;
+  /* Agregado en Fase 2 — fondo del control de despliegue cuando la fila está
+     expandida (Figma `corporate/200`). */
+  --color-corporate-200: #a2f9ff;
+  --color-corporate-400: #1ce0f4;
+  --color-corporate-500: #00bfd6;
+  --color-corporate-600: #039bb7;
+  --color-corporate-700: #0a7c94;
+  --color-corporate-950: #063646;
+
+  /* success */
+  /* El 50 se agregó en Fase 2 para el fondo del banner de notificación
+     "aprobada" (ares-notification-banner). Sigue la misma rampa que los
+     500/600/700 ya existentes. */
+  --color-success-50: #f0fdf4;
+  --color-success-500: #22c55e;
+  --color-success-600: #16a34a;
+  --color-success-700: #15803d;
+
+  /* warning */
+  --color-warning-50: #fef9ec;
+  --color-warning-200: #fada8d;
+  --color-warning-500: #ef8711;
+  --color-warning-600: #d3630c;
+  --color-warning-700: #af440e;
+
+  /* error */
+  --color-error-50: #fef2f2;
+  --color-error-200: #ffc9c9;
+  --color-error-500: #f24b4b;
+  --color-error-600: #de2424;
+  --color-error-700: #bb1a1a;
+  --color-error-800: #9b1919;
+
+  /* support (info / morado) */
+  --color-support-50: #ecefff;
+  --color-support-200: #c2c9ff;
+  --color-support-500: #6c63ff;
+  --color-support-700: #452ad8;
+  /* Agregado en Fase 2: fondo de la barra de acción de correlación
+     (Figma `support/950`). Ver DIFF-FASE2.md, M2. */
+  --color-support-950: #1e1650;
+
+  /* ============================================================
+     COLOR — Tokens semánticos
+     ============================================================ */
+
+  /* Background */
+  --color-bg-primary: var(--color-neutral-0);
+  --color-bg-secondary: var(--color-neutral-50);
+  --color-bg-tertiary: var(--color-neutral-100);
+  --color-bg-quaternary: var(--color-neutral-200);
+  --color-bg-inverse: var(--color-neutral-900);
+  /* Fondos oscuros de las 2 variantes de la barra de acción (Fase 2, M2).
+     `corporate-950` ya existía como primitivo pero no tenía token semántico. */
+  --color-bg-inverse-brand: var(--color-corporate-950);
+  --color-bg-inverse-support: var(--color-support-950);
+  --color-bg-brand: var(--color-corporate-500);
+  --color-bg-brand-strong: var(--color-corporate-700);
+  --color-bg-brand-subtle: var(--color-corporate-50);
+  --color-bg-error: var(--color-error-50);
+  --color-bg-warning: var(--color-warning-50);
+  --color-bg-info: var(--color-support-50);
+  --color-bg-success: var(--color-success-50);
+
+  /* Text */
+  --color-text-primary: var(--color-neutral-800);
+  --color-text-secondary: var(--color-neutral-700);
+  --color-text-tertiary: var(--color-neutral-500);
+  --color-text-disabled: var(--color-neutral-400);
+  --color-text-inverse: var(--color-neutral-0);
+  --color-text-brand: var(--color-corporate-700);
+  --color-text-error: var(--color-error-700);
+  --color-text-warning: var(--color-warning-700);
+  --color-text-success: var(--color-success-700);
+  --color-text-info: var(--color-support-700);
+
+  /* Border */
+  --color-border-default: var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-300);
+  --color-border-brand: var(--color-corporate-500);
+  --color-border-focus: var(--color-corporate-400);
+  --color-border-error: var(--color-error-500);
+  --color-border-warning: var(--color-warning-500);
+  --color-border-success: var(--color-success-500);
+  --color-border-info: var(--color-support-500);
+
+  /* Icon */
+  --color-icon-primary: var(--color-neutral-700);
+  --color-icon-secondary: var(--color-neutral-500);
+  --color-icon-disabled: var(--color-neutral-400);
+  --color-icon-inverse: var(--color-neutral-0);
+  --color-icon-warning: var(--color-warning-600);
+  --color-icon-error: var(--color-error-600);
+  --color-icon-success: var(--color-success-600);
+
+  /* Interactive (estados de botones primarios) */
+  --color-interactive-primary-hover: var(--color-corporate-600);
+  --color-interactive-success: var(--color-success-500);
+  --color-interactive-success-hover: var(--color-success-600);
+  --color-interactive-success-pressed: var(--color-success-700);
+  --color-interactive-danger: var(--color-error-500);
+  --color-interactive-danger-hover: var(--color-error-600);
+  --color-interactive-danger-pressed: var(--color-error-800);
+  --color-interactive-secondary: var(--color-support-500);
+
+  /* ============================================================
+     TIPOGRAFÍA
+     ============================================================ */
+
+  --font-family-base: "Inter", sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-bold: 700;
+
+  /* Escala de tamaño */
+  --font-size-caption: 10px; /* Body/Caption, Body/Caption Bold */
+  --font-size-xs: 12px; /* Body/XSmall, Body/XSmall Bold */
+  --font-size-sm: 14px; /* Body/Small, Body/Small Bold */
+  --font-size-base: 16px; /* Body/Base, Body/Base Bold */
+  --font-size-h4: 20px; /* Heading/H4 */
+  --font-size-h3: 24px; /* Heading/H3 */
+
+  /* Line-height */
+  --line-height-caption: 1.3;
+  --line-height-xs: 1.33;
+  --line-height-sm: 1.43;
+  --line-height-base: 1.5;
+  --line-height-h4: 1.4;
+  --line-height-h3: 1.33;
+
+  /* Letter-spacing */
+  --letter-spacing-default: 0px;
+  --letter-spacing-caption: 0.5px;
+  --letter-spacing-h3: -1px;
+
+  /* ============================================================
+     ESPACIADO
+     ============================================================ */
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+
+  /* ============================================================
+     BORDER-RADIUS
+     ============================================================ */
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 20px;
+  --radius-full: 9999px;
+
+  --shadow-modal:
+    0px 12px 32px 0px rgba(15, 24, 37, 0.14),
+    0px 4px 8px 0px rgba(15, 24, 37, 0.06);
+  --shadow-tooltip: 0px 4px 2px 0px rgba(0, 0, 0, 0.25);
+  --shadow-xs-brand: 0px 0px 1px 0px rgba(8, 145, 178, 0.23); /* botón "open image" */
+  --shadow-xs-brand-hover: 0px 0px 1.5px 0px rgba(8, 145, 178, 0.23);
+
+  /* Overlay de fondo detrás de los modales */
+  --color-overlay-modal: rgba(16, 30, 41, 0.5);
+}
